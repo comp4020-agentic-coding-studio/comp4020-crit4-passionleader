@@ -62,14 +62,20 @@ commit and a check or manual test that demonstrates the new behaviour.
 
 ## Design guide
 
-Use an original dark music-workstation interface inspired by the clarity and
-professional feel of Logic Pro, but do not copy its branding, icons, layout, or
-visual identity.
+Use an original, vivid, energetic music-workstation interface inspired by the
+clarity and professional feel of Logic Pro, but do not copy its branding,
+icons, layout, or visual identity. An earlier near-black charcoal direction
+read as too dark and gloomy in practice, so the palette moved to saturated
+colour on a deep gradient background, with translucent, glass-like panels and
+buttons — keep those readable (sufficient contrast, a visible surface even
+before hover/focus) rather than merely decorative.
 
-- Use a near-black charcoal background, layered panels, thin borders, and
-  restrained accent colours for chord categories.
-- Organise the page into a compact top bar, progression/timeline area, main
-  chord-pad area, and small status/help area.
+- Use a rich gradient background, layered glass (translucent, blurred) panels
+  and buttons, thin borders, and vivid accent colours for chord categories.
+- Organise the page into a compact top control bar (transport-style actions:
+  undo, delete selection, play from start, speed, clear), progression/timeline
+  area, main chord-pad area, bass/drum rhythm sections, and small status/help
+  area.
 - Make chord pads generous and tactile, with clear hover, keyboard-focus, and
   pressed states. A brief audio-reactive glow is useful feedback.
 - Keep labels concise. Use a readable sans-serif for interface text and a
