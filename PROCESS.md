@@ -1,85 +1,58 @@
 # Process overview
 
-<!-- TEMPLATE: this file is a shape to fill in, not a form. Replace everything
-     in it with your own overview, and delete this comment — `pnpm
-     check:evidence` will remind you if it's still here. -->
-
-A reading-guide to how the work came together --- a map to your process, not an
-essay about it. Markers read this file and follow its citations; they don't
-trawl the repo for evidence you didn't point at, so if a moment mattered, cite
-it.
-
-This file is the shape; the course site's
-[assessment page](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/assessment/#what-you-submit)
-is the requirement, and its
-[word counts](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/assessment/#word-counts)
-cover every deliverable.
-
 ## What I built
 
-One paragraph: the thing, and the idea behind it.
+Chord Session is a browser instrument for improvising a chord progression:
+press a pad, hear a live Web Audio chord, and get six new suggested next
+chords built from real voice-leading and functional-harmony rules, then
+optionally play the whole progression back with a synchronised bass line and
+drum pattern.
 
 ## The moments that mattered
 
-Three or four for an assignment; fewer is fine for a weekly prototype. Keep the
-list short so each moment has room to do all four jobs:
+The idea started in Korean, as something closer to "a tiny Logic Pro in the
+browser" than a chord-pad demo. I could picture the interaction — pads, a
+transport bar, a groove — far more clearly than I could describe it in
+English, and prompting straight from that picture produced vague, generic
+requests like "make it feel musical," which isn't something an agent can act
+on. So instead of prompting from the idea directly, I wrote it down as rough
+notes first, then used Codex to turn those notes into a focused `Plan.md` and
+a project-specific `CLAUDE.md` harness: explicit scope boundaries, an audio
+contract (one shared `AudioContext`, live synthesis only, tempo kept in one
+place), and a phased extension path. That translation step is what let Claude
+start from constraints instead of a mood. Both files land in
+[`b6dcb34`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit4-passionleader/commit/b6dcb34ebbd2ed5092418cc54bc7cc3e1f5a7e13),
+alongside the first playable core: pads, a curated chord set, and next-chord
+suggestions.
 
-1. **what happened** --- the problem, or the thing that went wrong
-2. **what you did instead of the obvious thing** --- the call you made, and why
-   it beat the obvious one
-3. **how you knew it was right** --- the check you ran, the viewport you looked
-   at, what you read before accepting the diff
-4. **the citation** --- a commit or commit range, a `CLAUDE.md` change, a check
-   that went from red to green, a prompt paired with the commit it produced
+That harness's job was deliberately narrowing. `Plan.md`'s "not in the first
+version" list — drums, editable rhythms, tempo, arpeggios, save slots — kept
+the first commit small enough to actually finish and test, while
+`CLAUDE.md`'s extension-path section argued for keeping chord data, audio
+scheduling, and DOM rendering decoupled specifically so those cut features
+could be added later without a rewrite. That bet paid off directly:
+[`91437de`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit4-passionleader/commit/91437de399b76168f199c874edcb9280e6ee3a4e)
+reopens exactly those deferred items once the core was solid, and
+[`a3eb94f`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit4-passionleader/commit/a3eb94f4946fbe39aea4b08e8e69fe4561a2848a)
+builds them on the same audio engine and state modules from the first commit,
+not new ones.
 
-Jobs 2 and 3 are the ones the repo can't tell a reader on its own, so they're
-where the marks are. The strongest moments are the ones where a correction
-landed in the **harness** --- the standards and checks your work has to satisfy
---- rather than in a retry: a rule added to `CLAUDE.md`, a check wired up, an
-attempt thrown away. Retrying until it passes is the routine case, and changing
-what the work runs against is the skilled one.
-
-Cite each moment as a link whose text is the commit hash or range and whose
-target is this repo's commit or compare URL, so a reader clicks straight to the
-evidence:
-
-- one commit: [`a1b2c3d`](https://github.com/YOUR-ORG/YOUR-REPO/commit/a1b2c3d)
-- a range:
-  [`a1b2c3d...e4f5a6b`](https://github.com/YOUR-ORG/YOUR-REPO/compare/a1b2c3d...e4f5a6b)
-
-To pair a prompt with the commit it produced, quote the prompt (curated, not a
-full transcript) next to the citation:
-
-> the prompt, verbatim
-
-Screenshots are welcome where one carries the verification better than a
-sentence does. Commit the file to this repo and link it with a **relative**
-path, which is what makes it render on GitHub: `![alt text](docs/before.png)`.
-Images don't count towards the word count and don't replace the citation.
-
-### A worked moment, for shape
-
-Delete this section along with the rest of the boilerplate --- it's here to show
-the four jobs in one paragraph, not to be imitated in content.
-
-> The date formatter kept coming back with `toLocaleDateString()` and no locale
-> argument, so the same build rendered differently on my machine and in CI. I'd
-> already re-prompted it twice, which fixed the line but not the habit, so the
-> third time I put the rule in `CLAUDE.md` instead
-> ([`3f9ac21`](https://github.com/YOUR-ORG/YOUR-REPO/commit/3f9ac21)) and added
-> a spec test that fails on a bare `toLocaleDateString`. That's what told me it
-> had actually taken: the test went red against the old code and green against
-> the new, and the next two features it wrote passed it without prompting
-> ([`3f9ac21...b7e0d14`](https://github.com/YOUR-ORG/YOUR-REPO/compare/3f9ac21...b7e0d14)).
-
-## Before you ship
-
-`pnpm check:evidence` verifies your citations resolve to real commits, that a
-reflection entry the marker reads is in `reflections/`, and that your
-`CLAUDE.md` is there --- before a marker ever opens the file. It checks that
-your map is traceable, not that it is good: the marker judges whether your
-small, deliberately chosen set of moments shows real judgement and reflection. A
-green check is not a substitute for that curation.
-
-Images aren't checked: whether one renders is visible the moment you look. Open
-this file on GitHub and look at it before you ship.
+"Make it sound musical" stayed too vague to act on until I stopped saying it
+and named what "musical" actually meant technically: chord choices ranked by
+real functional-harmony scoring, and voices that lead smoothly between chords
+instead of jumping registers —
+[`9ed006d`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit4-passionleader/commit/9ed006df3276ec614de30633550cc682ca961bf7).
+The other half of "musical" I could only judge by ear and by eye. I kept the
+dev server running and pressed pads myself rather than trusting a description
+of what the code should do, and that habit is what caught two real mistakes
+no test would have flagged. First, the original near-black interface simply
+read as gloomy once it was actually on screen, which is what
+[`91437de`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit4-passionleader/commit/91437de399b76168f199c874edcb9280e6ee3a4e)
+pivots away from, moving to the vivid glass-panel design recorded in
+`CLAUDE.md` and `Plan.md`. Second, the new Stop button was first styled
+identically to the destructive, red "Clear" button; looking at the rendered
+page made it obvious that pairing them implied Stop was as dangerous as
+erasing the whole progression, when it is fully reversible — fixed in the same
+[`a3eb94f`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit4-passionleader/commit/a3eb94f4946fbe39aea4b08e8e69fe4561a2848a)
+commit that added the button. Both corrections came from looking at the
+actual interface, not from re-reading the code that produced it.
