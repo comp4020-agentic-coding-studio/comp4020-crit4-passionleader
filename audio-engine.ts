@@ -2,7 +2,7 @@
 // rendering both stay ignorant of how sound is produced, so a future voice
 // (drums, arpeggios) can schedule through this same context without touching
 // button code.
-import { type ChordDef, midiToFrequency } from "./chords.ts";
+import { type ChordDef, midiToFrequency, voiceChordTones } from "./chords.ts";
 
 type AudioContextConstructor = typeof AudioContext;
 
@@ -30,14 +30,23 @@ const BASS_SHAPE: VoiceShape = { attack: 0.008, decay: 1.3, peak: 0.5 };
 export class AudioEngine {
   #context: AudioContext | null = null;
   #master: GainNode | null = null;
+  #lastVoicing: number[] | null = null;
 
   playChord(chord: ChordDef): void {
     const { context, master } = this.#ensureGraph();
     const startAt = context.currentTime;
-    for (const semitones of chord.intervals) {
-      this.#playVoice(context, master, midiToFrequency(chord.rootMidi + semitones), startAt, PIANO_SHAPE, true);
+    const voicing = voiceChordTones(chord, this.#lastVoicing);
+    this.#lastVoicing = voicing;
+    for (const note of voicing) {
+      this.#playVoice(context, master, midiToFrequency(note), startAt, PIANO_SHAPE, true);
     }
     this.#playVoice(context, master, midiToFrequency(chord.rootMidi - BASS_OCTAVE_DROP), startAt, BASS_SHAPE, false);
+  }
+
+  // Call when the progression is cleared so the next chord voices in plain
+  // root position instead of leading smoothly from an abandoned progression.
+  reset(): void {
+    this.#lastVoicing = null;
   }
 
   #ensureGraph(): { context: AudioContext; master: GainNode } {

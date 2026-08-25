@@ -3,13 +3,15 @@
 // the same handler. Talks to state.ts and audio-engine.ts but neither of
 // those talks back to the DOM.
 import type { AudioEngine } from "./audio-engine.ts";
-import { CHORDS, type ChordDef } from "./chords.ts";
+import { CHORDS, type ChordDef, type ConfidenceTier, type RankedChord } from "./chords.ts";
 import { clearProgression, getCandidates, getProgression, playChordById } from "./state.ts";
 
 // The pad grid refreshes slightly after the press so the glow is visible on
 // the pad the player actually touched, instead of vanishing under their
 // finger the instant the suggestions change.
 const GRID_REFRESH_DELAY_MS = 180;
+
+const TIER_ORDER: readonly ConfidenceTier[] = ["safe", "colour", "surprise"];
 
 interface Elements {
   padGrid: HTMLElement;
@@ -41,14 +43,15 @@ export function mountInstrument(root: HTMLElement, engine: AudioEngine): () => v
 
   let pendingPadRefresh: number | null = null;
 
-  function buildPadButton(chord: ChordDef, index: number, total: number): HTMLButtonElement {
+  function buildPadButton(ranked: RankedChord, index: number, total: number): HTMLButtonElement {
+    const { chord, tier } = ranked;
     const button = document.createElement("button");
     button.type = "button";
     button.className = "pad";
     button.dataset.category = chord.category;
     button.setAttribute(
       "aria-label",
-      `Play ${chord.fullName} — chord ${index + 1} of ${total}, keyboard shortcut ${index + 1}`,
+      `Play ${chord.fullName} — ${tier} next chord, ${index + 1} of ${total}, keyboard shortcut ${index + 1}`,
     );
 
     const key = document.createElement("span");
@@ -59,11 +62,19 @@ export function mountInstrument(root: HTMLElement, engine: AudioEngine): () => v
     name.className = "pad__name";
     name.textContent = chord.shortName;
 
+    const meta = document.createElement("span");
+    meta.className = "pad__meta";
+
     const roman = document.createElement("span");
     roman.className = "pad__roman";
     roman.textContent = chord.roman;
 
-    button.append(key, name, roman);
+    const tierBadge = document.createElement("span");
+    tierBadge.className = `pad__tier pad__tier--${tier}`;
+    tierBadge.textContent = tier;
+
+    meta.append(roman, tierBadge);
+    button.append(key, name, meta);
     button.addEventListener("click", () => handlePlay(chord, button));
     return button;
   }
@@ -71,7 +82,7 @@ export function mountInstrument(root: HTMLElement, engine: AudioEngine): () => v
   function renderPads(): void {
     const candidates = getCandidates();
     elements.padGrid.replaceChildren(
-      ...candidates.map((chord, index) => buildPadButton(chord, index, candidates.length)),
+      ...candidates.map((ranked, index) => buildPadButton(ranked, index, candidates.length)),
     );
   }
 
@@ -101,10 +112,16 @@ export function mountInstrument(root: HTMLElement, engine: AudioEngine): () => v
   }
 
   function announce(chord: ChordDef): void {
-    const next = getCandidates()
-      .map((candidate) => candidate.shortName)
-      .join(", ");
-    elements.announcer.textContent = `Played ${chord.fullName}. Next chords: ${next}.`;
+    const byTier = new Map<ConfidenceTier, string[]>();
+    for (const ranked of getCandidates()) {
+      const names = byTier.get(ranked.tier) ?? [];
+      names.push(ranked.chord.shortName);
+      byTier.set(ranked.tier, names);
+    }
+    const groups = TIER_ORDER.filter((tier) => byTier.has(tier)).map(
+      (tier) => `${tier}: ${(byTier.get(tier) ?? []).join(", ")}`,
+    );
+    elements.announcer.textContent = `Played ${chord.fullName}. Next chords — ${groups.join("; ")}.`;
   }
 
   function handlePlay(chord: ChordDef, sourceButton: HTMLButtonElement | null): void {
@@ -133,15 +150,16 @@ export function mountInstrument(root: HTMLElement, engine: AudioEngine): () => v
       return;
     }
     const button = elements.padGrid.children.item(index);
-    const chord = getCandidates()[index];
-    if (!(button instanceof HTMLButtonElement) || !chord) {
+    const ranked = getCandidates()[index];
+    if (!(button instanceof HTMLButtonElement) || !ranked) {
       return;
     }
-    handlePlay(chord, button);
+    handlePlay(ranked.chord, button);
   }
 
   elements.clearButton.addEventListener("click", () => {
     clearProgression();
+    engine.reset();
     renderProgressionAndStatus();
     renderPads();
     elements.announcer.textContent = "Progression cleared.";

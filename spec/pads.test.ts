@@ -24,7 +24,7 @@ function mount() {
   if (!root) {
     throw new Error("test root missing");
   }
-  const engine = { playChord: vi.fn() } as unknown as AudioEngine;
+  const engine = { playChord: vi.fn(), reset: vi.fn() } as unknown as AudioEngine;
   unmount = mountInstrument(root, engine);
   return { engine, root };
 }
@@ -49,6 +49,19 @@ describe("Chord Session pads", () => {
       expect(pad.type).toBe("button");
       expect(pad.getAttribute("aria-label")).toBeTruthy();
     }
+  });
+
+  it("labels each pad with a confidence tier so no choice can feel wrong", () => {
+    const { root } = mount();
+    const pads = [...root.querySelectorAll<HTMLButtonElement>("#pad-grid button")];
+    const tally = { safe: 0, colour: 0, surprise: 0 };
+    for (const pad of pads) {
+      const label = pad.getAttribute("aria-label") ?? "";
+      const tier = (["safe", "colour", "surprise"] as const).find((t) => label.includes(`${t} next chord`));
+      expect(tier).toBeTruthy();
+      if (tier) tally[tier] += 1;
+    }
+    expect(tally).toEqual({ safe: 2, colour: 2, surprise: 2 });
   });
 
   it("plays a live chord and adds it to the progression on click", () => {
@@ -93,7 +106,7 @@ describe("Chord Session pads", () => {
   });
 
   it("clears the progression back to the starter prompt", () => {
-    const { root } = mount();
+    const { root, engine } = mount();
     root.querySelector<HTMLButtonElement>("#pad-grid button")?.click();
     vi.advanceTimersByTime(200);
 
@@ -101,5 +114,6 @@ describe("Chord Session pads", () => {
 
     expect(root.querySelector("#progression-list .chip--hint")).toBeTruthy();
     expect(root.querySelector("#status-line")?.textContent).toContain("0 chords played");
+    expect(engine.reset).toHaveBeenCalledTimes(1);
   });
 });

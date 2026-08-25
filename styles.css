@@ -248,11 +248,28 @@ main {
   font-weight: 700;
 }
 
+.pad__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 .pad__roman {
   font-size: 0.75rem;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.pad__tier {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.05rem 0.35rem;
+  border-radius: 1rem;
+  color: var(--text-muted);
+  border: 1px solid var(--panel-border);
 }
 
 @media (prefers-reduced-motion: no-preference) {

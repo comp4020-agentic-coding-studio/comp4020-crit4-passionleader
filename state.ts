@@ -1,24 +1,24 @@
 // Progression state, kept apart from the DOM so future controls (tempo,
 // save slots) can read and write it without touching rendering code.
-import { type ChordDef, type ChordId, nextChordCandidates } from "./chords.ts";
+import { type ChordId, type RankedChord, rankNextChords } from "./chords.ts";
 
 let progression: ChordId[] = [];
-let candidates: ChordDef[] = nextChordCandidates(null);
+let candidates: RankedChord[] = rankNextChords(progression);
 
 export function getProgression(): readonly ChordId[] {
   return progression;
 }
 
-export function getCandidates(): readonly ChordDef[] {
+export function getCandidates(): readonly RankedChord[] {
   return candidates;
 }
 
 export function playChordById(id: ChordId): void {
   progression = [...progression, id];
-  candidates = nextChordCandidates(id);
+  candidates = rankNextChords(progression);
 }
 
 export function clearProgression(): void {
   progression = [];
-  candidates = nextChordCandidates(null);
+  candidates = rankNextChords(progression);
 }
