@@ -1,6 +1,9 @@
-// Your prototype's TypeScript goes here. If the week's spec rules out
-// JavaScript, delete this file and the script tag in index.html.
-const intro = document.querySelector<HTMLElement>('[data-testid="intro"]');
-if (intro) {
-  intro.dataset.ready = "true";
+import { AudioEngine } from "./audio-engine.ts";
+import { mountInstrument } from "./ui.ts";
+
+const root = document.querySelector<HTMLElement>(".app");
+if (!root) {
+  throw new Error("Missing .app root element.");
 }
+
+mountInstrument(root, new AudioEngine());
